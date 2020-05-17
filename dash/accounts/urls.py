@@ -15,4 +15,9 @@ urlpatterns = [
     path('register/',views.register,name='register'),
     path('logout/',views.logoutuser,name='logout'),
     path('user/',views.UserPage,name='user'),
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('settings/',views.account_settings,name='account_settings'),
+]
+
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

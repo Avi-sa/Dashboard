@@ -6,7 +6,7 @@ from .filters import OrderFilter
 from django.contrib.auth import login,authenticate,logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
-from .forms import OrderUserForm
+from .forms import OrderUserForm,CustomerForm
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -97,7 +97,7 @@ def delete_form(request,pk):
 def OrderFilter(request):
     return render(request)
 
-# @unauthenticated_user
+@unauthenticated_user
 def loginview(request):
     if request.method == "POST":
         username = request.POST.get('username')
@@ -115,9 +115,28 @@ def loginview(request):
     return render(request,'accounts/login.html',context)
 
 
+@login_required(login_url="login")
+@allowed_users(allowed_roles=['customer'])
 def UserPage(request):
-    context = {}
+    orders = request.user.customer.order_set.all()
+    total_order = orders.count()
+    order_deivered = orders.filter(status="Delivered").count()
+    orders_pending = orders.filter(status="Pending").count()
+    print(orders)
+    context = {"orders":orders,'total_order':total_order,'order_deivered':order_deivered,'orders_pending':orders_pending}
     return render(request,'accounts/user.html',context)
+
+@login_required(login_url="login")
+@allowed_users(allowed_roles=['customer'])
+def account_settings(request):
+    customer = request.user.customer
+    form = CustomerForm(instance=customer)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST,request.FILES,instance=customer)
+        if form.is_valid():
+            form.save()
+    context = {'form':form}
+    return render(request,'accounts/user_settings.html',context)
 
 def logoutuser(request):
     logout(request)
@@ -131,8 +150,12 @@ def register(request):
         if form.is_valid():
             user = form.save()
 
-            group = Group.objects.get(name='user')
+            group = Group.objects.get(name='customer')
             user.groups.add(group)
+            Customer.objects.create(
+                user=user,
+            )
+
 
             username = form.cleaned_data['username']
             messages.success(request,"Signup successful for " +username )

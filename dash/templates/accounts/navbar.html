@@ -13,18 +13,21 @@
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
-  {% if form.user.is_authenticated %}
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
+      {% if request.user.is_staff %}
       <li class="nav-item active">
         <a class="nav-link" href="{% url 'Dashboard' %}">Dashboard</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'product' %}">Products</a>
       </li>
+      {% else %}
+      <li class="nav-item"><a href="{% url 'account_settings' %}">Settings</a></li>
+      {% endif %}
     </ul>
+
   </div>
-  {% endif %}
   <span><a class="hello-msg" href="{% url 'Dashboard' %}">{{ request.user }}</a></span>
   <span ><a class="hello-msg" href="{% url 'logout' %}">Logout</a></span>
 </nav>
